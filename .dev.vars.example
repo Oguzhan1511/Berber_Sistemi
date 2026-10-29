@@ -1,0 +1,7 @@
+# Local preview administrator. Use your actual admin email in production.
+BARBER_ADMIN_EMAIL=seedy@sites.test
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SECRET_KEY=
+# Optional; backend routes use the server-only secret key.
+SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_JWKS_URL=https://your-project.supabase.co/auth/v1/.well-known/jwks.json

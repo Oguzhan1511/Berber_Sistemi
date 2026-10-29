@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {availableTimes} from '../app/availability.ts';
+const date='2026-11-02',now=new Date('2026-10-29T09:00:00Z');
+const config={services:[{name:'Saç',minutes:45}],employees:[{id:'a',active:true},{id:'b',active:true}],days:Array.from({length:7},()=>({open:true,start:'10:00',end:'14:00'})),closedDates:[],hoursConfigured:true,interval:40};
+const slots=(bookings=[],employee='a',settings=config)=>availableTimes(settings,date,employee,'Saç',bookings,now);
+assert.deepEqual(slots(),['10:00','10:40','11:20','12:00','12:40','13:20']);
+const booking={date,employeeId:'a',time:'11:00',minutes:40};
+assert.deepEqual(slots([booking]),['10:00','11:40','12:20','13:00']);
+assert.deepEqual(slots([booking],'b'),slots());
+assert.deepEqual(slots([{...booking,time:'10:00',minutes:240}]),[]);
+assert.deepEqual(slots([], 'a',{...config,closedDates:[date]}),[]);
+assert.deepEqual(slots([], 'a',{...config,hoursConfigured:false}),[]);
+assert.deepEqual(slots([{...booking,time:'10:00',minutes:80},{...booking,time:'10:40',minutes:80}]),['12:00','12:40','13:20']);
+assert.deepEqual(availableTimes(config,'2026-10-28','a','Saç',[],now),[]);
+assert(!availableTimes(config,'2026-10-29','a','Saç',[],now).some(t=>t<='12:00'));
+assert.deepEqual(slots([], 'missing'),[]);
+console.log('10 uygunluk senaryosu geçti.');

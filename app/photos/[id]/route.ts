@@ -1,0 +1,3 @@
+import {findPhoto,getPhoto} from '../../store';
+export const dynamic='force-dynamic';
+export async function GET(_request:Request,{params}:{params:Promise<{id:string}>}){const {id}=await params;try{const row=await findPhoto(id);if(!row)return new Response('Fotoğraf bulunamadı',{status:404});const object=await getPhoto(row.object_key);if(!object)return new Response('Fotoğraf bulunamadı',{status:404});return new Response(object.body,{headers:{'Content-Type':object.type,'Cache-Control':'private, max-age=60','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'"}});}catch{return new Response('Fotoğraf yüklenemedi',{status:503});}}
