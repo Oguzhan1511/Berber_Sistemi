@@ -5,3 +5,7 @@ SUPABASE_SECRET_KEY=
 # Optional; backend routes use the server-only secret key.
 SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_JWKS_URL=https://your-project.supabase.co/auth/v1/.well-known/jwks.json
+
+# Username login (configure server-side; never store the real password here)
+BARBER_ADMIN_USERNAME=
+BARBER_ADMIN_PASSWORD_HASH=

@@ -43,4 +43,4 @@ Gizli anahtarları `NEXT_PUBLIC_` değişkenlerine veya istemci koduna eklemeyin
 
 ## Vercel
 
-Müşteri bağlantısı `/`, berber bağlantısı `/berber` yolundadır. Vercel kurulumu için [docs/vercel.md](docs/vercel.md) dosyasına bakın. Yönetici hesabı daha sonra tanımlanmak üzere ertelendiği için canlı berber paneli şu anda girişe kapalıdır.
+Müşteri bağlantısı `/`, berber bağlantısı `/berber` yolundadır. Vercel kurulumu için [docs/vercel.md](docs/vercel.md) dosyasına bakın. Canlı berber paneli kullanıcı adı ve şifreyle korunur; yönetici bilgileri yalnızca sunucu ortam değişkenlerinde tutulur.

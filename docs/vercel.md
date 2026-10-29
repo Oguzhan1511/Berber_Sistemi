@@ -13,7 +13,9 @@ Optional: `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_JWKS_URL`.
 
 Customer URL: `/`. Barber URL: `/berber`.
 
-The owner deferred configuring the administrator account. Therefore production `/berber` displays an inactive-login message, and admin APIs deny access, including requests with forged local authentication headers. Activating a real production sign-in flow and authorizing the barber account is required before panel access. The local preview keeps its existing mock login.
+Production `/berber` presents a username/password login. Configure `BARBER_ADMIN_USERNAME` and `BARBER_ADMIN_PASSWORD_HASH` as server-only environment variables. The PBKDF2-SHA256 hash format is `pbkdf2-sha256:600000:<32-character salt>:<64-character hash>`; the salt is encoded as UTF-8 when deriving the hash. Never put the actual password or password hash in Git.
+
+Apply `supabase/admin-auth.sql` for sessions and the persistent login attempt limiter. Sessions use cryptographically random tokens in HttpOnly, Secure, SameSite=Lax host-only cookies. Only SHA-256 token hashes are stored in the database; sessions expire after 8 hours. Logout revokes the server record. Changes to the password hash invalidate existing sessions. Production never trusts the preview's injected authentication headers.
 
 The 14-day cleanup is already scheduled in Supabase and does not depend on Vercel Cron or a running local computer.
 
