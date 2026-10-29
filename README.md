@@ -40,3 +40,7 @@ npm run build
 React, TypeScript, Vinext/Vite, Cloudflare Workers ve Supabase. Framework ve çalışma ortamı hakkında ek notlar: [docs/sites-runtime.md](docs/sites-runtime.md).
 
 Gizli anahtarları `NEXT_PUBLIC_` değişkenlerine veya istemci koduna eklemeyin. Üretimde ortam değerlerini sunucu tarafındaki gizli değişkenler olarak yapılandırın. Yerel geliştirme girişini canlı ortamda etkinleştirmeyin.
+
+## Vercel
+
+Müşteri bağlantısı `/`, berber bağlantısı `/berber` yolundadır. Vercel kurulumu için [docs/vercel.md](docs/vercel.md) dosyasına bakın. Yönetici hesabı daha sonra tanımlanmak üzere ertelendiği için canlı berber paneli şu anda girişe kapalıdır.

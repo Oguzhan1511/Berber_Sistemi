@@ -48,3 +48,5 @@ yarn-error.log*
 
 # Safe template containing no real credentials
 !.dev.vars.example
+
+/.vercel/
