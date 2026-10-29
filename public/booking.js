@@ -2,10 +2,6 @@
 let BUSINESS_WHATSAPP = '';
 async function initialize(config){
 BUSINESS_WHATSAPP=config.whatsapp;
-if(/^[1-9]\d{9,14}$/.test(BUSINESS_WHATSAPP)){
- const url='https://wa.me/'+BUSINESS_WHATSAPP+'?text='+encodeURIComponent('Merhaba Village Barber! Bilgi almak istiyorum.');
- for(const selector of ['#whatsapp-contact','#contact-whatsapp']){const link=document.querySelector(selector);if(link){link.href=url;link.hidden=false;}}
-}
 const $ = s => document.querySelector(s);
 const SERVICES = config.services;
 const EMPLOYEES = (config.employees||[]).filter(employee=>employee.active);
