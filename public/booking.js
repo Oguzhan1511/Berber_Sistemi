@@ -26,16 +26,13 @@ const selectedService = () => SERVICES.find(service=>service.name===$('#service'
 function updateSummary(){const service=selectedService();$('#service-summary').textContent=`${service.name} · ${priceLabel(service)}${selectedEmployee()?' · '+selectedEmployee().name:''}${$('#date').value?' · '+new Date($('#date').value+'T12:00:00').toLocaleDateString('tr-TR',{day:'numeric',month:'long'}):''}${typeof selectedTime!=='undefined'&&selectedTime?' · '+selectedTime:''}`;}
 SERVICES.forEach((service,index)=>{
  const option=document.createElement('option');option.value=service.name;option.textContent=`${service.name} — ${priceLabel(service)}`;$('#service').append(option);
- const card=document.createElement('article');card.className='service';
- const number=document.createElement('span');number.className='num';number.textContent=`${String(index+1).padStart(2,'0')} / HAIR STUDIO` ;
- const title=document.createElement('h3');title.textContent=service.name;
- const description=document.createElement('p');description.textContent=service.description;
- const price=document.createElement('div');price.className='service-price'+(service.price===null?' pending':'');price.textContent=priceLabel(service);
- const foot=document.createElement('div');foot.className='service-foot';const duration=document.createElement('span');duration.textContent=`Randevu süresi ${config.interval} dk.`;
- const link=document.createElement('a');link.href='#randevu';link.textContent='Randevu al ↗';link.setAttribute('aria-label',service.name+' için randevu al');link.onclick=()=>{$('#service').value=service.name;showBookingStep(false);updateSummary();renderTimes();};foot.append(duration,link);card.append(number,title,description,price,foot);$('#service-list').append(card);
+ const row=document.createElement('div');row.className='price-list-row';
+ const title=document.createElement('dt');title.textContent=service.name;
+ const price=document.createElement('dd');price.textContent=service.price===null?'—':priceLabel(service);if(service.price===null)price.setAttribute('aria-label','Fiyat henüz belirlenmedi');
+ row.append(title,price);$('#service-list').append(row);
 });
 $('#service').addEventListener('change',()=>{updateSummary();renderTimes();});updateSummary();
-const note=document.querySelector('#hizmetler .note');note.textContent=SERVICES.some(s=>s.price===null)?'Bazı hizmetlerin fiyatları henüz belirlenmedi.':'Fiyatlar Türk lirasıdır. Süreler yaklaşık uygulama süresidir.';
+
 const contact=document.querySelector('#contact-details');contact.replaceChildren();const address=document.createElement('span');address.textContent=config.address||'Adres bilgisi henüz eklenmedi.';contact.append(address,document.createElement('br'));const hours=document.createElement('span');hours.textContent=config.hoursConfigured?'Çalışma saatlerine göre randevu talebi oluşturabilirsin.':'Çalışma saatleri henüz belirlenmedi.';contact.append(hours);
 if(config.whatsapp){const phone=$('#contact-phone');phone.href='tel:+'+config.whatsapp;phone.textContent='+'+config.whatsapp;phone.hidden=false;}
 
