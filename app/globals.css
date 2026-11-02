@@ -30,3 +30,5 @@
 
 /* Keep mobile booking entry focused on the reservation form. */
 @media(max-width:900px){.appointment-section .booking-intro{display:none}.studio-site .appointment-section{padding-top:24px;scroll-margin-top:0}}
+
+.studio-site .booking-form #booking-form-title{font-size:clamp(38px,10vw,52px);font-weight:500;line-height:1.1}
