@@ -3,6 +3,7 @@ let BUSINESS_WHATSAPP = '';
 async function initialize(config){
 BUSINESS_WHATSAPP=config.whatsapp;
 const $ = s => document.querySelector(s);
+let selectedTime='',pending=false,lastPayload='',requestId='';
 const SERVICES = config.services;
 const EMPLOYEES = (config.employees||[]).filter(employee=>employee.active);
 const selectedEmployee=()=>EMPLOYEES.find(employee=>employee.id===$('#employee').value);
@@ -17,28 +18,31 @@ for(const employee of EMPLOYEES){
  button.onclick=()=>{$('#employee').value=employee.id;$('#employee').dispatchEvent(new Event('change'));};employeeCards.append(button);employeeButtons.push([employee.id,button]);
 }
 $('#employee').closest('label').after(employeeCards);
+if(EMPLOYEES.length){$('#employee-field').classList.add('employee-select-hidden');const label=document.createElement('span');label.className='field-label full';label.textContent='Berberin';employeeCards.before(label);}
+if(EMPLOYEES.length===1){$('#employee').value=EMPLOYEES[0].id;employeeButtons[0][1].setAttribute('aria-pressed','true');}
 $('#employee').addEventListener('change',()=>{for(const [id,button] of employeeButtons)button.setAttribute('aria-pressed',String(id===$('#employee').value));updateSummary();renderTimes();$('#error').textContent='';});
 const priceLabel = service => service.price === null ? 'Fiyat bilgisi yakında' : new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY',maximumFractionDigits:0}).format(service.price);
 const selectedService = () => SERVICES.find(service=>service.name===$('#service').value);
-function updateSummary(){const service=selectedService();$('#service-summary').textContent=`${service.name} · Randevu süresi ${config.interval} dk. · ${priceLabel(service)}${selectedEmployee()?' · Berber: '+selectedEmployee().name:''}`;}
+function updateSummary(){const service=selectedService();$('#service-summary').textContent=`${service.name} · ${priceLabel(service)}${selectedEmployee()?' · '+selectedEmployee().name:''}${$('#date').value?' · '+new Date($('#date').value+'T12:00:00').toLocaleDateString('tr-TR',{day:'numeric',month:'long'}):''}${typeof selectedTime!=='undefined'&&selectedTime?' · '+selectedTime:''}`;}
 SERVICES.forEach((service,index)=>{
  const option=document.createElement('option');option.value=service.name;option.textContent=`${service.name} — ${priceLabel(service)}`;$('#service').append(option);
  const card=document.createElement('article');card.className='service';
- const number=document.createElement('span');number.className='num';number.textContent=`${String(index+1).padStart(2,'0')} / VILLAGE` ;
+ const number=document.createElement('span');number.className='num';number.textContent=`${String(index+1).padStart(2,'0')} / HAIR STUDIO` ;
  const title=document.createElement('h3');title.textContent=service.name;
  const description=document.createElement('p');description.textContent=service.description;
  const price=document.createElement('div');price.className='service-price'+(service.price===null?' pending':'');price.textContent=priceLabel(service);
  const foot=document.createElement('div');foot.className='service-foot';const duration=document.createElement('span');duration.textContent=`Randevu süresi ${config.interval} dk.`;
- const link=document.createElement('a');link.href='#randevu';link.textContent='Randevu al ↗';link.setAttribute('aria-label',service.name+' için randevu al');link.onclick=()=>{$('#service').value=service.name;updateSummary();renderTimes();};foot.append(duration,link);card.append(number,title,description,price,foot);$('#service-list').append(card);
+ const link=document.createElement('a');link.href='#randevu';link.textContent='Randevu al ↗';link.setAttribute('aria-label',service.name+' için randevu al');link.onclick=()=>{$('#service').value=service.name;showBookingStep(false);updateSummary();renderTimes();};foot.append(duration,link);card.append(number,title,description,price,foot);$('#service-list').append(card);
 });
 $('#service').addEventListener('change',()=>{updateSummary();renderTimes();});updateSummary();
 const note=document.querySelector('#hizmetler .note');note.textContent=SERVICES.some(s=>s.price===null)?'Bazı hizmetlerin fiyatları henüz belirlenmedi.':'Fiyatlar Türk lirasıdır. Süreler yaklaşık uygulama süresidir.';
-const contact=document.querySelector('#iletisim p');contact.replaceChildren();const address=document.createElement('span');address.textContent=config.address||'Adres bilgisi henüz eklenmedi.';contact.append(address,document.createElement('br'));const hours=document.createElement('span');hours.textContent=config.hoursConfigured?'Çalışma saatlerine göre randevu talebi oluşturabilirsin.':'Çalışma saatleri henüz belirlenmedi.';contact.append(hours);
+const contact=document.querySelector('#contact-details');contact.replaceChildren();const address=document.createElement('span');address.textContent=config.address||'Adres bilgisi henüz eklenmedi.';contact.append(address,document.createElement('br'));const hours=document.createElement('span');hours.textContent=config.hoursConfigured?'Çalışma saatlerine göre randevu talebi oluşturabilirsin.':'Çalışma saatleri henüz belirlenmedi.';contact.append(hours);
+if(config.whatsapp){const phone=$('#contact-phone');phone.href='tel:+'+config.whatsapp;phone.textContent='+'+config.whatsapp;phone.hidden=false;}
+
 const dateInput = $('#date');
 const localDate = new Intl.DateTimeFormat('en-CA', {timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 dateInput.min=localDate;dateInput.value=localDate;
 $('#year').textContent=new Date().getFullYear();
-let selectedTime='',pending=false,lastPayload='',requestId='';
 let timesRequest=0;
 async function renderTimes(preserveSelection=false){
  const previous=preserveSelection===true?selectedTime:'';
@@ -62,9 +66,17 @@ async function renderTimes(preserveSelection=false){
  }catch(error){if(version===timesRequest){$('.times').textContent=error.message||'Saatler yüklenemedi.';const retry=document.createElement('button');retry.type='button';retry.className='time';retry.textContent='Tekrar dene';retry.onclick=renderTimes;$('.times').append(retry);}}
  finally{if(version===timesRequest)$('.times').setAttribute('aria-busy','false');}
 }
+function showBookingStep(details){
+ $('#booking-choice').hidden=details;$('#booking-details').hidden=!details;$('#booking-details').disabled=!details;
+ $('#booking-step-label').textContent=details?'02 / SON BİRKAÇ BİLGİ':'01 / GÜNÜNÜ PLANLA';
+ $('#booking-form-title').textContent=details?'Az kaldı.':'Yerini ayıralım.';
+ $('#error').textContent='';if(details){updateSummary();$('#name').focus({preventScroll:true});}$('#form').scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});
+}
+$('#booking-next').onclick=()=>{if(!selectedEmployee()){$('#error').textContent='Lütfen berberini seç.';return;}if(!selectedTime){$('#error').textContent='Devam etmek için uygun bir saat seç.';return;}showBookingStep(true);};
+$('#booking-back').onclick=()=>showBookingStep(false);
 renderTimes();dateInput.addEventListener('change',renderTimes);window.addEventListener('focus',()=>renderTimes(true));setInterval(()=>{if(!document.hidden&&!pending&&dateInput.value&&selectedEmployee())renderTimes(true);},60000);
 
-$('#form').addEventListener('submit',async e=>{e.preventDefault();if(pending)return;if(!selectedEmployee()){$('#error').textContent='Lütfen berberini seç.';return;}if(dateInput.value<localDate){$('#error').textContent='Lütfen bugünü veya gelecek bir tarihi seç.';return;}if(!selectedTime){$('#error').textContent='Devam etmek için bir saat seç.';return;}const payload={name:$('#name').value.trim(),phone:$('#phone').value.trim(),service:$('#service').value,employeeId:selectedEmployee().id,date:dateInput.value,time:selectedTime,note:$('#note').value.trim()};const fingerprint=JSON.stringify(payload);if(fingerprint!==lastPayload){requestId=crypto.randomUUID();lastPayload=fingerprint;}const button=$('#form button[type=submit]');pending=true;button.disabled=true;button.textContent='Talebin kaydediliyor…';$('#error').textContent='';try{const response=await fetch('/api/appointments',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:requestId,...payload})});const result=await response.json();if(!response.ok){if(response.status===409)renderTimes();throw Error(result.error||'Randevu kaydedilemedi.');}renderTimes();const date=new Date(payload.date+'T12:00:00').toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'});$('#summary').textContent=`${payload.service} · Berber: ${selectedEmployee().name} · ${date} · ${payload.time} · Talep no: ${result.id}`;$('#whatsapp-link').href=result.whatsappUrl;$('#setup').showModal();window.location.assign(result.whatsappUrl);}catch(error){$('#error').textContent=error.message||'Bağlantı kurulamadı. Tekrar deneyebilirsin.';}finally{pending=false;button.disabled=!EMPLOYEES.length;button.innerHTML='Randevu oluştur <span>↗</span>';}});
+$('#form').addEventListener('submit',async e=>{e.preventDefault();if(pending)return;if(!selectedEmployee()){$('#error').textContent='Lütfen berberini seç.';return;}if(dateInput.value<localDate){$('#error').textContent='Lütfen bugünü veya gelecek bir tarihi seç.';return;}if(!selectedTime){showBookingStep(false);$('#error').textContent='Seçtiğin saat artık uygun değil. Lütfen yeni bir saat seç.';return;}const payload={name:$('#name').value.trim(),phone:$('#phone').value.trim(),service:$('#service').value,employeeId:selectedEmployee().id,date:dateInput.value,time:selectedTime,note:$('#note').value.trim()};const fingerprint=JSON.stringify(payload);if(fingerprint!==lastPayload){requestId=crypto.randomUUID();lastPayload=fingerprint;}const button=$('#form button[type=submit]');pending=true;button.disabled=true;button.textContent='Talebin kaydediliyor…';$('#error').textContent='';try{const response=await fetch('/api/appointments',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:requestId,...payload})});const result=await response.json();if(!response.ok){if(response.status===409){showBookingStep(false);renderTimes();}throw Error(result.error||'Randevu kaydedilemedi.');}renderTimes();const date=new Date(payload.date+'T12:00:00').toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'});$('#summary').textContent=`${payload.service} · Berber: ${selectedEmployee().name} · ${date} · ${payload.time} · Talep no: ${result.id}`;$('#whatsapp-link').href=result.whatsappUrl;$('#setup').showModal();window.location.assign(result.whatsappUrl);}catch(error){$('#error').textContent=error.message||'Bağlantı kurulamadı. Tekrar deneyebilirsin.';}finally{pending=false;button.disabled=!EMPLOYEES.length;button.innerHTML='Randevu oluştur <span>↗</span>';}});
 $('#close').onclick=()=>$('#setup').close();
 
 }
